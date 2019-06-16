@@ -21,8 +21,13 @@ namespace Recipies.Parse._101JuiceRecipies
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var path = $"{Path.Combine(Directory.GetCurrentDirectory(), _fileName)}.sqlite";
+            var path = GetPath(_fileName);
             optionsBuilder.UseSqlite($"Filename={path}");
+        }
+
+        public static string GetPath( string fileName = "101JuiceRecipies" )
+        {
+            return $"{Path.Combine(Directory.GetCurrentDirectory(), "101JuiceRecipies", fileName)}.sqlite";
         }
     }
 }

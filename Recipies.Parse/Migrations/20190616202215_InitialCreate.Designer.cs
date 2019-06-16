@@ -9,8 +9,8 @@ using Recipies.Parse._101JuiceRecipies;
 namespace Recipies.Parse.Migrations
 {
     [DbContext(typeof(JuiceRecipieContext))]
-    [Migration("20190614050449_Initial")]
-    partial class Initial
+    [Migration("20190616202215_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,7 +23,8 @@ namespace Recipies.Parse.Migrations
                     b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Label");
+                    b.Property<string>("Label")
+                        .IsRequired();
 
                     b.HasKey("CategoryId");
 
@@ -35,11 +36,11 @@ namespace Recipies.Parse.Migrations
                     b.Property<int>("IngredientId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Label");
+                    b.Property<string>("Label")
+                        .IsRequired();
 
-                    b.Property<double>("Qty");
-
-                    b.Property<string>("Unit");
+                    b.Property<string>("Unit")
+                        .IsRequired();
 
                     b.HasKey("IngredientId");
 
@@ -51,21 +52,23 @@ namespace Recipies.Parse.Migrations
                     b.Property<int>("NutritionId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Calories");
+                    b.Property<int>("Calories");
 
-                    b.Property<string>("Carbohydrate");
+                    b.Property<int>("Carbohydrate");
 
-                    b.Property<string>("Fat");
+                    b.Property<int>("Fat");
 
-                    b.Property<string>("Fiber");
+                    b.Property<int>("Fiber");
 
-                    b.Property<string>("Protein");
+                    b.Property<int>("Kilojoules");
 
-                    b.Property<string>("Sodium");
+                    b.Property<int>("Protein");
 
-                    b.Property<string>("Sugars");
+                    b.Property<int>("Sodium");
 
-                    b.Property<string>("TransFat");
+                    b.Property<int>("Sugars");
+
+                    b.Property<int>("TransFat");
 
                     b.HasKey("NutritionId");
 
@@ -77,7 +80,7 @@ namespace Recipies.Parse.Migrations
                     b.Property<int>("RecipieId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("CategoryId");
+                    b.Property<int>("CategoryForeignKey");
 
                     b.Property<string>("Description");
 
@@ -85,13 +88,14 @@ namespace Recipies.Parse.Migrations
 
                     b.Property<string>("Instructions");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired();
 
                     b.Property<int?>("NutritionId");
 
                     b.HasKey("RecipieId");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CategoryForeignKey");
 
                     b.HasIndex("NutritionId");
 
@@ -103,7 +107,7 @@ namespace Recipies.Parse.Migrations
                     b.Property<int>("RecipieIngredientId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("IngredientForeignKey");
+                    b.Property<int>("IngredientForeignKey");
 
                     b.Property<int>("IngredientId");
 
@@ -111,7 +115,7 @@ namespace Recipies.Parse.Migrations
 
                     b.Property<double>("Qty");
 
-                    b.Property<int?>("RecipieForeignKey");
+                    b.Property<int>("RecipieForeignKey");
 
                     b.Property<string>("Unit");
 
@@ -126,9 +130,10 @@ namespace Recipies.Parse.Migrations
 
             modelBuilder.Entity("Recipies.Core.Models.Recipie", b =>
                 {
-                    b.HasOne("Recipies.Core.Models.Category")
+                    b.HasOne("Recipies.Core.Models.Category", "Category")
                         .WithMany("Recipies")
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryForeignKey")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Recipies.Core.Models.Nutrition", "Nutrition")
                         .WithMany()
@@ -139,11 +144,13 @@ namespace Recipies.Parse.Migrations
                 {
                     b.HasOne("Recipies.Core.Models.Ingredient", "Ingredient")
                         .WithMany()
-                        .HasForeignKey("IngredientForeignKey");
+                        .HasForeignKey("IngredientForeignKey")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Recipies.Core.Models.Recipie", "Recipie")
                         .WithMany("Ingredients")
-                        .HasForeignKey("RecipieForeignKey");
+                        .HasForeignKey("RecipieForeignKey")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

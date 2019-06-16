@@ -13,9 +13,11 @@ namespace Recipies.Core.Models
 
         public double Qty { get; set; }
 
+        [Required]
         [ForeignKey("RecipieForeignKey")]
         public Recipie Recipie { get; set; }
 
+        [Required]
         [ForeignKey("IngredientForeignKey")]
         public Ingredient Ingredient { get; set; }
 

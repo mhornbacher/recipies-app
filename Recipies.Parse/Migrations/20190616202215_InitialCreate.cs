@@ -2,7 +2,7 @@
 
 namespace Recipies.Parse.Migrations
 {
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -12,7 +12,7 @@ namespace Recipies.Parse.Migrations
                 {
                     CategoryId = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Label = table.Column<string>(nullable: true)
+                    Label = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -25,9 +25,8 @@ namespace Recipies.Parse.Migrations
                 {
                     IngredientId = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Qty = table.Column<double>(nullable: false),
-                    Label = table.Column<string>(nullable: true),
-                    Unit = table.Column<string>(nullable: true)
+                    Label = table.Column<string>(nullable: false),
+                    Unit = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,14 +39,15 @@ namespace Recipies.Parse.Migrations
                 {
                     NutritionId = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Calories = table.Column<string>(nullable: true),
-                    Fat = table.Column<string>(nullable: true),
-                    TransFat = table.Column<string>(nullable: true),
-                    Sodium = table.Column<string>(nullable: true),
-                    Carbohydrate = table.Column<string>(nullable: true),
-                    Fiber = table.Column<string>(nullable: true),
-                    Sugars = table.Column<string>(nullable: true),
-                    Protein = table.Column<string>(nullable: true)
+                    Calories = table.Column<int>(nullable: false),
+                    Kilojoules = table.Column<int>(nullable: false),
+                    Fat = table.Column<int>(nullable: false),
+                    TransFat = table.Column<int>(nullable: false),
+                    Sodium = table.Column<int>(nullable: false),
+                    Carbohydrate = table.Column<int>(nullable: false),
+                    Fiber = table.Column<int>(nullable: false),
+                    Sugars = table.Column<int>(nullable: false),
+                    Protein = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,22 +60,22 @@ namespace Recipies.Parse.Migrations
                 {
                     RecipieId = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: false),
                     Description = table.Column<string>(nullable: true),
                     ImgName = table.Column<string>(nullable: true),
+                    CategoryForeignKey = table.Column<int>(nullable: false),
                     Instructions = table.Column<string>(nullable: true),
-                    NutritionId = table.Column<int>(nullable: true),
-                    CategoryId = table.Column<int>(nullable: true)
+                    NutritionId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Recipies", x => x.RecipieId);
                     table.ForeignKey(
-                        name: "FK_Recipies_Categories_CategoryId",
-                        column: x => x.CategoryId,
+                        name: "FK_Recipies_Categories_CategoryForeignKey",
+                        column: x => x.CategoryForeignKey,
                         principalTable: "Categories",
                         principalColumn: "CategoryId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Recipies_Nutritions_NutritionId",
                         column: x => x.NutritionId,
@@ -91,8 +91,8 @@ namespace Recipies.Parse.Migrations
                     RecipieIngredientId = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Qty = table.Column<double>(nullable: false),
-                    RecipieForeignKey = table.Column<int>(nullable: true),
-                    IngredientForeignKey = table.Column<int>(nullable: true),
+                    RecipieForeignKey = table.Column<int>(nullable: false),
+                    IngredientForeignKey = table.Column<int>(nullable: false),
                     IngredientId = table.Column<int>(nullable: false),
                     Label = table.Column<string>(nullable: true),
                     Unit = table.Column<string>(nullable: true)
@@ -105,13 +105,13 @@ namespace Recipies.Parse.Migrations
                         column: x => x.IngredientForeignKey,
                         principalTable: "Ingredients",
                         principalColumn: "IngredientId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_RecipieIngredients_Recipies_RecipieForeignKey",
                         column: x => x.RecipieForeignKey,
                         principalTable: "Recipies",
                         principalColumn: "RecipieId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -125,9 +125,9 @@ namespace Recipies.Parse.Migrations
                 column: "RecipieForeignKey");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Recipies_CategoryId",
+                name: "IX_Recipies_CategoryForeignKey",
                 table: "Recipies",
-                column: "CategoryId");
+                column: "CategoryForeignKey");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Recipies_NutritionId",

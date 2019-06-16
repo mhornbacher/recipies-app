@@ -25,6 +25,16 @@ namespace Recipies.Core.Contexts
             builder.Entity<Recipie>()
                 .Property(nameof(Recipie.Instructions))
                 .HasConversion(splitStringConverter);
+
+            // ingredient labels are unique
+            builder.Entity<Ingredient>()
+                .HasIndex(i => i.Label)
+                .IsUnique();
+
+            // category labels are unique
+            builder.Entity<Category>()
+                .HasIndex(c => c.Label)
+                .IsUnique();
         }
     }
 }

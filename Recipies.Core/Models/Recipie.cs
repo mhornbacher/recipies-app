@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Recipies.Core.Models
@@ -7,6 +8,7 @@ namespace Recipies.Core.Models
     {
         public int RecipieId { get; set; } 
 
+        [Required]
         public string Name { get; set; }
 
         public string Description { get; set; }
@@ -15,6 +17,10 @@ namespace Recipies.Core.Models
 
         [InverseProperty("Recipie")]
         public List<RecipieIngredient> Ingredients { get; set; }
+
+        [Required]
+        [ForeignKey("CategoryForeignKey")]
+        public Category Category { get; set; }
 
         public List<string> Instructions { get; set; }
 
