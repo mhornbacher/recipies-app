@@ -1,18 +1,21 @@
 ﻿using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore;
 using Recipies.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Recipies.Parse._101JuiceRecipies
 {
     class JuiceRecipieParser
     {
-        private List<Ingredient> Ingredients;
+        private Dictionary<string, Ingredient> NameIngredientMap
+            = new Dictionary<string, Ingredient>();
+
+        private Regex instructionsPattern = new Regex(@"([0-9])+\) (.+)");
+        private Regex ingredientPattern = new Regex(@"— ([0-9½⅓¼⅔ ]+)(.+)");
 
         public async Task<IEnumerable<Category>> ParseRecipies()
         {
@@ -34,15 +37,15 @@ namespace Recipies.Parse._101JuiceRecipies
             return await Task.WhenAll(tasks);
         }
 
-        public async Task<Category> ParseRecipieFile(string fileName, string category)
+        private async Task<Category> ParseRecipieFile(string fileName, string category)
         {
             var result = new Category
             {
-                Label = category
+                Name = category
             };
 
             var doc = new HtmlDocument();
-            doc.Load("101JuiceRecipies\\files\\part0006.html");
+            doc.Load($"101JuiceRecipies\\files\\{fileName}");
 
             // toArray becuase HAP sucks. And sadly decent API's or editors are against the ideals of C#
             var filteredNodes = doc.DocumentNode.Descendants().ToArray()
@@ -54,49 +57,64 @@ namespace Recipies.Parse._101JuiceRecipies
                 .Select(e => e.GetAttributeValue("class", ""))
                 .ToList();
 
-            Recipie recipie = new Recipie();
+            Recipie recipie = null;
 
-            foreach( var node in filteredNodes )
+            foreach (var node in filteredNodes)
             {
                 var className = node.GetAttributeValue("class", "");
                 var content = WebUtility.HtmlDecode( node.InnerText );
 
-                switch (className)
+                if ( className.StartsWith("head-") )
                 {
-                    case "head-g":
-                        
-                        if ( !string.IsNullOrEmpty(recipie.Name) )
-                        {
-                            result.Recipies.Add(recipie);
-                        }
+                    if (recipie != null)
+                    {
+                        result.Recipies.Add(recipie);
+                    }
 
-                        recipie = new Recipie()
-                        {
-                            Name = content
-                        };
+                    recipie = new Recipie()
+                    {
+                        Name = content
+                    };
+                }
+                else if (className.Equals("extract"))
+                {
+                    recipie.Description = content;
+                }
+                else if (className.Equals("center1"))
+                {
+                    recipie.ImgName = node
+                        .FirstChild
+                        .GetAttributeValue("src", "")
+                        .Replace("../images/", "");
+                }
+                else if (className.StartsWith("ing-hang")
+                    && ingredientPattern.IsMatch(content))
+                {
+                    var match = ingredientPattern.Match(content);
+                    var name = match.Groups[2].ToString().Trim();
+                    var qty = match.Groups[1].ToString().Trim().Replace(" ", "");
 
-                        break;
+                    recipie.Ingredients.Add(new RecipieIngredient()
+                    {
+                        Qty = GetQty(qty),
+                        Ingredient = GetIngredient(name),
+                        Optional = name.Contains("(optional)")
+                    });
+                }
+                else if (className.StartsWith("ing-hang")
+                    && instructionsPattern.IsMatch(content))
+                {
+                    var instruction = instructionsPattern
+                        .Match(content)
+                        .Groups[2]
+                        .ToString()
+                        .Trim();
 
-                    case "extract":
-
-                        recipie.Description = content;
-                        break;
-
-                    case "center1":
-                        // TODO get image name
-                        break;
-
-                    case "ing-hang":
-                    case "ing-hang1":
-                        // TODO: Parse instructions and recipies
-                        break;
-
-                    case "item":
-                        // TODO: Parse nutritional values
-                        break;
-
-                    default:
-                        break;
+                    recipie.Instructions.Add(instruction);
+                }
+                else if (className.Equals("r1"))
+                {
+                    IconTypeParser.ParseImgSrc(node, ref recipie);
                 }
             }
 
@@ -105,14 +123,65 @@ namespace Recipies.Parse._101JuiceRecipies
 
         private bool ContainsDesiredClass(HtmlNode node)
         {
-            var classes = node.GetClasses();
+            var className = node.GetAttributeValue("class", "");
 
-            return classes.Contains("head-g")
-                || classes.Contains("extract")
-                || classes.Contains("center1")
-                || classes.Contains("ing-hang")
-                || classes.Contains("ing-hang1")
-                || classes.Contains("item");
+            return className.StartsWith("head-")
+                || className.Equals("extract")
+                || className.Equals("center1")
+                || className.StartsWith("ing-hang")
+                || className.Equals("r1");
+        }
+
+        private double GetQty(string qtyString)
+        {
+            qtyString = qtyString
+                .Replace("⅔", ".66")
+                .Replace("½", ".50")
+                .Replace("⅓", ".33")
+                .Replace("¼", ".25");
+            return double.Parse(qtyString);
+        }
+
+        private Ingredient GetIngredient(string name)
+        {
+            Ingredient ingredient;
+
+            Unit unit = Unit.STANDARD;
+
+            name = name.Replace("(optional)", "");
+
+            // measured in inches
+            if (name.StartsWith('"'))
+            {
+                unit = Unit.CM;
+                name = Regex.Replace(name, @"""? ?\/? ?\/ ?[0-9.]+?cm ", "");
+            }
+            else if (name.StartsWith("cup"))
+            {
+                unit = Unit.CUP;
+                name = Regex.Replace(name, @"cups? ?\/ ?[0-9]+?g ", "");
+            }
+            else if (name.StartsWith("tsp"))
+            {
+                unit = Unit.TSP;
+                name = Regex.Replace(name, @"tsp ?\/ ?[0-9]+?ml ", "");
+            }
+
+            name = name.Trim();
+
+            if (NameIngredientMap.TryGetValue(name, out ingredient))
+            {
+                return ingredient;
+            }
+
+            ingredient = new Ingredient()
+            {
+                Name = name,
+                Unit = unit
+            };
+
+            NameIngredientMap.Add(name, ingredient);
+            return ingredient;
         }
     }
 }

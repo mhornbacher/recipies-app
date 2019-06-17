@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Recipies.Core.Contexts;
-using Recipies.Core.Models;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Recipies.Parse._101JuiceRecipies
 {

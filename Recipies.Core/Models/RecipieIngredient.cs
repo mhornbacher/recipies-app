@@ -1,5 +1,4 @@
 ﻿
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Recipies.Core.Models
@@ -7,30 +6,26 @@ namespace Recipies.Core.Models
     /// <summary>
     /// Represents a an ingredient with a quantity for a given recipie
     /// </summary>
-    public class RecipieIngredient
+    public class RecipieIngredient : IIngredient
     {
-        public int RecipieIngredientId { get; set; }
-
         public double Qty { get; set; }
+        public bool Optional { get; set; }
 
-        [Required]
-        [ForeignKey("RecipieForeignKey")]
+        public int RecipieId { get; set; }
         public Recipie Recipie { get; set; }
 
-        [Required]
-        [ForeignKey("IngredientForeignKey")]
+        public int IngredientId { get; set; }
         public Ingredient Ingredient { get; set; }
 
-        public int IngredientId {
-            get => Ingredient.IngredientId;
-            set => Ingredient.IngredientId = value;
-        }
-        public string Label
+        [NotMapped]
+        public string Name
         {
-            get => Ingredient.Label;
-            set => Ingredient.Label = value;
+            get => Ingredient.Name;
+            set => Ingredient.Name = value;
         }
-        public string Unit
+
+        [NotMapped]
+        public Unit Unit
         {
             get => Ingredient.Unit;
             set => Ingredient.Unit = value;

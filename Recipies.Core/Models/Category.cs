@@ -9,9 +9,10 @@ namespace Recipies.Core.Models
         public int CategoryId { get; set; }
 
         [Required]
-        public string Label { get; set; }
+        public string Name { get; set; }
 
         [InverseProperty("Category")]
-        public List<Recipie> Recipies { get; set; } = new List<Recipie>();
+        public List<Recipie> Recipies { get; set; }
+            = new List<Recipie>();
     }
 }

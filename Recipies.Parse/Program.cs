@@ -21,7 +21,15 @@ namespace Recipies.Parse
 
             if (File.Exists(path))
             {
-                File.Delete(path);
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Fatal Error: {e.ToString()}");
+                    return;
+                }
             }
 
             using (var db = new JuiceRecipieContext())
@@ -32,12 +40,11 @@ namespace Recipies.Parse
 
                 Console.WriteLine("Parsing data....");
 
-                var catagory = await juiceRecipieParser
-                    .ParseRecipieFile("part0006.html", "Green");
+                var categories = await juiceRecipieParser.ParseRecipies();
 
                 Console.WriteLine("Adding parsed results....");
 
-                await db.Categories.AddAsync(catagory);
+                await db.Categories.AddRangeAsync(categories);
 
                 Console.WriteLine("Saving database...");
 
@@ -51,7 +58,6 @@ namespace Recipies.Parse
                 Console.WriteLine($"Categories: {await db.Categories.CountAsync()}");
                 Console.WriteLine($"Recipies: {await db.Recipies.CountAsync()}");
                 Console.WriteLine($"Ingredients: {await db.Ingredients.CountAsync()}");
-                Console.WriteLine($"Nutrition: {await db.Nutritions.CountAsync()}");
 
                 Console.WriteLine("\n" +
                     "----------------------------------------------\n" +

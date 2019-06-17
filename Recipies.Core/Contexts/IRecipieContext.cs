@@ -12,7 +12,6 @@ namespace Recipies.Core.Contexts
         public DbSet<Recipie> Recipies { get; set; }
         public DbSet<RecipieIngredient> RecipieIngredients { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
-        public DbSet<Nutrition> Nutritions { get; set; }
 
         protected override void OnModelCreating( ModelBuilder builder )
         {
@@ -28,13 +27,16 @@ namespace Recipies.Core.Contexts
 
             // ingredient labels are unique
             builder.Entity<Ingredient>()
-                .HasIndex(i => i.Label)
+                .HasIndex(i => i.Name)
                 .IsUnique();
 
             // category labels are unique
             builder.Entity<Category>()
-                .HasIndex(c => c.Label)
+                .HasIndex(c => c.Name)
                 .IsUnique();
+
+            builder.Entity<RecipieIngredient>()
+                .HasKey(ri => new { ri.RecipieId, ri.IngredientId });
         }
     }
 }

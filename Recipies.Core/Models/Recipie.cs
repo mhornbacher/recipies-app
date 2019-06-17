@@ -17,13 +17,19 @@ namespace Recipies.Core.Models
 
         [InverseProperty("Recipie")]
         public List<RecipieIngredient> Ingredients { get; set; }
+            = new List<RecipieIngredient>();
 
         [Required]
-        [ForeignKey("CategoryForeignKey")]
+        [ForeignKey("CategoryId")]
         public Category Category { get; set; }
 
+        [Column(TypeName = "text")]
         public List<string> Instructions { get; set; }
+            = new List<string>();
 
-        public Nutrition Nutrition { get; set; }
+        public bool Quick { get; set; }
+        public bool Fruit { get; set; }
+        public bool Reboot { get; set; }
+        public bool PostWorkout { get; set; }
     }
 }
